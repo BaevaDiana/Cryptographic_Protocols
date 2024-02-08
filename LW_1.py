@@ -32,7 +32,7 @@ def solve_linear_congruence(a, b, m):
         solutions = [(x0 + k * (m // gcd)) % m for k in range(gcd)]
         return solutions
 
-# ввод данных
+
 a = int(input("Введите коэффициент а: "))
 b = int(input("Введите коэффициент b: "))
 m = int(input("Введите коэффициент m: "))
