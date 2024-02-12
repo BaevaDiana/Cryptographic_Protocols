@@ -1,4 +1,4 @@
-# решение сравнений через алгоритм Евклида
+# решение сравнений первого порядка через расширенный алгоритм Евклида
 
 def extended_gcd(a, b):
     """
@@ -38,12 +38,13 @@ def solve_linear_congruence(a, b, m):
         solutions = [(x0 + k * (m // gcd)) % m for k in range(gcd)]
         return solutions
 
-
 a = int(input("Введите коэффициент а: "))
 b = int(input("Введите коэффициент b: "))
 m = int(input("Введите коэффициент m: "))
 
+# получение списка решений
 solutions = solve_linear_congruence(a, b, m)
+
 if isinstance(solutions, str):
     print(solutions)
 else:
