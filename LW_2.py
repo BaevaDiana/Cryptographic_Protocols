@@ -38,18 +38,10 @@ def legendre_symbol(a, p):
     """
     if a % p == 0:
         legendre_symbol = 0
-    elif not is_prime(p):
-        # если p не является простым числом, выполняется разложение его на простые множители
-        factors = factorize(p)
+    elif pow(a, (p - 1) // 2, p) == 1:
         legendre_symbol = 1
-        for factor in factors:
-            exponent = (p - 1) // factor
-            legendre_symbol *= pow(a, exponent, p)
-            legendre_symbol %= p
     else:
-        # если p - простое число, вычислим символ Лежандра напрямую
-        legendre_symbol = pow(a, (p - 1) // 2, p)
-
+        legendre_symbol = -1
     return legendre_symbol
 
 def solve_quadratic_congruence(a, b, m):
@@ -65,18 +57,38 @@ def solve_quadratic_congruence(a, b, m):
     # вычисление символа Лежандра
     legendre = legendre_symbol(a, m)
 
-    # решений нет
-    if legendre == 0:
-        return solutions
-    # решения есть
-    elif legendre == 1:
-        for x in range(m):
-            if (a * x**2) % m == b:
-                solutions.append(x)
-        return solutions
-    # решений нет
+    if legendre == 1:
+        if is_prime(m):
+            print("Сравнение с простым модулем")
+            # случай, когда m - простое число
+            if m > 2:
+            # a имеет квадратный корень по модулю m
+                sqrt_a = pow(a, (m + 1) // 4, m)
+                x1 = (sqrt_a * b) % m
+                x2 = m - x1
+                solutions.append(x1)
+                solutions.append(x2)
+                return solutions
+            else:
+                return solutions
+        # случай, когда m - степень простого числа:
+        elif not is_prime(m) and len(factorize(m)) == 1:
+            print("Сравнение с составным модулем - степень простого числа")
+            for x in range(m):
+                if (a * x**2) % m == b:
+                    solutions.append(x)
+            return solutions
+
+        # случай, когда m - составное число, которое раскладывается на простые множители
+        else:
+            print("Сравнение с составным модулем - множители простого числа")
+            for x in range(m):
+                if (a * x ** 2) % m == b:
+                    solutions.append(x)
+            return solutions
     else:
         return solutions
+
 
 a = int(input("Введите коэффициент а: "))
 b = int(input("Введите коэффициент b: "))
@@ -85,7 +97,7 @@ m = int(input("Введите коэффициент m: "))
 # получение списка решений
 solutions = solve_quadratic_congruence(a, b, m)
 
-if solutions:
-    print(f"Решения сравнения {a}x^2 ≡ {b} (mod {m}): {solutions}")
+if solutions :
+    print(f"Решения сравнения {a}*x^2 ≡ {b} (mod {m}): {solutions}")
 else:
-    print(f"Сравнение {a}x^2 ≡ {b} (mod {m}) не имеет решений.")
+    print(f"Сравнение {a}*x^2 ≡ {b} (mod {m}) не имеет решений.")
