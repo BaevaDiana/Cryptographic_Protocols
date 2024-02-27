@@ -5,7 +5,7 @@ class GaloisFieldCalculator:
     def add(self, a, b):
         """
         Сложение многочленов a и b в поле Галуа.
-        Возвращает результат (a + b) % 2.
+        Возвращает результат (a + b) % P, где P-образующий многочлен.
         """
         result = []
         len_a, len_b = len(a), len(b)
@@ -18,6 +18,15 @@ class GaloisFieldCalculator:
         for i in range(max_length):
             result.append((a[i] + b[i]) % 2)
 
+        # вычислим остаток от деления на образующий многочлен
+        P = self.generator_polynomial
+        while len(result) >= len(P):
+            coef = result[0]
+            if coef != 0:
+                for j in range(len(P)):
+                    result[j] = (result[j] + P[j]) % 2
+            del result[0]
+
         return result
 
     def multiply(self, a, b):
@@ -29,12 +38,22 @@ class GaloisFieldCalculator:
         for i in range(len(a)):
             for j in range(len(b)):
                 result[i + j] = (result[i + j] + a[i] * b[j]) % 2
+
+        # вычислим остаток от деления на образующий многочлен
+        P = self.generator_polynomial
+        while len(result) >= len(P):
+            coef = result[0]
+            if coef != 0:
+                for j in range(len(P)):
+                    result[j] = (result[j] + P[j]) % 2
+            del result[0]
+
         return result
 
     def divide(self, a, b):
         """
         Деление многочленов a и b в поле Галуа.
-        Возвращает частное (a // b) % 2.
+        Уже выполняете деление с учетом образующего многочлена.
         """
         # копируем многочлены, чтобы не изменять исходные
         poly1 = a[:]
@@ -69,11 +88,19 @@ class GaloisFieldCalculator:
     def power(self, a, n):
         """
         Возведение многочлена a в степень n в поле Галуа.
-        Возвращает результат (a ** n) % 2.
+        Возвращает результат (a ** n) % P, где P - образующий многочлен.
         """
         result = [1]
         for _ in range(n):
             result = self.multiply(result, a)
+            # Вычислим остаток от деления на образующий многочлен
+            P = self.generator_polynomial
+            while len(result) >= len(P):
+                coef = result[0]
+                if coef != 0:
+                    for j in range(len(P)):
+                        result[j] = (result[j] + P[j]) % 2
+                del result[0]
         return result
 
     def multiplication_table(self):
