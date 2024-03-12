@@ -145,6 +145,6 @@ print("Произведение:", product_result)
 print("Деление:", division_result)
 print("Возведение в степень многочлена f1:", power_result_f1)
 print("Возведение в степень многочлена f2:", power_result_f2)
-# print("Таблица умножения:")
-# for row in multiplication_table:
-#     print(row)
+print("Таблица умножения:")
+for row in multiplication_table:
+    print(row)
