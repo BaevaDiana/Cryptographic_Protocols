@@ -159,6 +159,5 @@ def _maj(x: int, y: int, z: int):
     return (x & y) ^ (x & z) ^ (y & z)
 
 # вызов функций
-if __name__ == "__main__":
-    user_input = input("Введите текст: ")
-    print(f"SHA-256 хэш для введенного текста: {generate_hash(user_input).hex()}")
+user_input = input("Введите текст: ")
+print(f"SHA-256 хэш для введенного текста: {generate_hash(user_input).hex()}")
