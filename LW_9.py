@@ -1,3 +1,4 @@
+# реализация DES
 
 # PI (Initial Permutation Matrix for the Data)
 PI = [58, 50, 42, 34, 26, 18, 10, 2,

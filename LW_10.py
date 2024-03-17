@@ -1,3 +1,5 @@
+# реализация рюкзачной криптосистемы
+
 from random import randint
 
 class KeyPair:
