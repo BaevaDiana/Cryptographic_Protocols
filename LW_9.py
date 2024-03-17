@@ -108,6 +108,7 @@ PI_1 = [40, 8, 48, 16, 56, 24, 64, 32,
 
 SHIFT = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
 
+
 # преобразование строки в список битов
 def string_to_bit_array(text):
     array = list()
@@ -271,9 +272,10 @@ class des():
     def decrypt(self, key, text, padding=False):
         return self.run(key, text, DECRYPT, padding)
 
-
-plaintext = "Hello, world!"  # Открытый текст
-key = "SecretKey"  # Ключ
+# открытый текст
+plaintext = "Hello, World!"
+# ключ
+key = "SecretKey"
 
 # преобразование в двоичные последовательности
 key_bits = string_to_bit_array(key)
