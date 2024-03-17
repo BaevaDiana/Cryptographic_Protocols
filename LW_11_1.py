@@ -1,3 +1,6 @@
+# построение SHA-256 для введённого текста (алгоритмическая реализация)
+
+# таблица констант
 K = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -9,34 +12,37 @@ K = [
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ]
 
+# вычисление хэша SHA-256
 def generate_hash(message: bytearray) -> bytearray:
-    """Return a SHA-256 hash from the message passed.
-    The argument should be a bytes, bytearray, or
-    string object."""
 
+    # проверка типа сообщения и преобразование в байтовый массив
     if isinstance(message, str):
-        message = bytearray(message, 'ascii')
+        message = bytearray(message, 'utf-8')
     elif isinstance(message, bytes):
         message = bytearray(message)
     elif not isinstance(message, bytearray):
         raise TypeError
 
     # Padding
-    length = len(message) * 8 # len(message) is number of BYTES!!!
+    length = len(message) * 8
+    # добавление бита 0х80 (конец сообщения)
     message.append(0x80)
+    # добавление нулей пока длина сообщения не кратна 512 бит (необходимая длина для обработки)
     while (len(message) * 8 + 64) % 512 != 0:
         message.append(0x00)
 
-    message += length.to_bytes(8, 'big') # pad to 8 bytes or 64 bits
-
-    assert (len(message) * 8) % 512 == 0, "Padding did not complete properly!"
+    # добавление длины сообщения в битах
+    message += length.to_bytes(8, 'big')
+    # проверка завершения дополнения
+    assert (len(message) * 8) % 512 == 0, "Дополнение(padding) не выполнено должным образом!"
 
     # Parsing
-    blocks = [] # contains 512-bit chunks of message
-    for i in range(0, len(message), 64): # 64 bytes is 512 bits
+    blocks = []
+    # разбиение на блоки по 64 байта (512 бита)
+    for i in range(0, len(message), 64):
         blocks.append(message[i:i+64])
 
-    # Setting Initial Hash Value
+    # начальные значения хеш-функции
     h0 = 0x6a09e667
     h1 = 0xbb67ae85
     h2 = 0x3c6ef372
@@ -46,29 +52,29 @@ def generate_hash(message: bytearray) -> bytearray:
     h6 = 0x1f83d9ab
     h7 = 0x5be0cd19
 
-    # SHA-256 Hash Computation
+    # вычисление хэша
     for message_block in blocks:
-        # Prepare message schedule
         message_schedule = []
+        # 64 раунда
         for t in range(0, 64):
             if t <= 15:
-                # adds the t'th 32 bit word of the block,
-                # starting from leftmost word
-                # 4 bytes at a time
+                # копирование первых 16 слов из блока сообщения
                 message_schedule.append(bytes(message_block[t*4:(t*4)+4]))
             else:
+                # вычисление остальных сообщения (48) на основе предыдущих
                 term1 = _sigma1(int.from_bytes(message_schedule[t-2], 'big'))
                 term2 = int.from_bytes(message_schedule[t-7], 'big')
                 term3 = _sigma0(int.from_bytes(message_schedule[t-15], 'big'))
                 term4 = int.from_bytes(message_schedule[t-16], 'big')
 
-                # append a 4-byte byte object
+                # представление в виде 4-х байтового сообщения
                 schedule = ((term1 + term2 + term3 + term4) % 2**32).to_bytes(4, 'big')
                 message_schedule.append(schedule)
 
+        # проверка длины блока сообщения
         assert len(message_schedule) == 64
 
-        # Initialize working variables
+        # рабочие переменные
         a = h0
         b = h1
         c = h2
@@ -78,13 +84,13 @@ def generate_hash(message: bytearray) -> bytearray:
         g = h6
         h = h7
 
-        # Iterate for t=0 to 63
+        # преобразование переменных на итерациях от t=0 до 63
         for t in range(64):
             t1 = ((h + _capsigma1(e) + _ch(e, f, g) + K[t] +
                    int.from_bytes(message_schedule[t], 'big')) % 2**32)
-
             t2 = (_capsigma0(a) + _maj(a, b, c)) % 2**32
 
+            # обновление переменных
             h = g
             g = f
             f = e
@@ -94,7 +100,7 @@ def generate_hash(message: bytearray) -> bytearray:
             b = a
             a = (t1 + t2) % 2**32
 
-        # Compute intermediate hash value
+        # вычисление промежуточного кеша
         h0 = (h0 + a) % 2**32
         h1 = (h1 + b) % 2**32
         h2 = (h2 + c) % 2**32
@@ -104,51 +110,55 @@ def generate_hash(message: bytearray) -> bytearray:
         h6 = (h6 + g) % 2**32
         h7 = (h7 + h) % 2**32
 
+    # итоговый хэш сообщения - сумма элементов последнего блока сообщения
     return ((h0).to_bytes(4, 'big') + (h1).to_bytes(4, 'big') +
             (h2).to_bytes(4, 'big') + (h3).to_bytes(4, 'big') +
             (h4).to_bytes(4, 'big') + (h5).to_bytes(4, 'big') +
             (h6).to_bytes(4, 'big') + (h7).to_bytes(4, 'big'))
 
+# вспомогательные функции
+
+# операция циклического сдвига
+def _rotate_right(num: int, shift: int, size: int = 32):
+    return (num >> shift) | (num << size - shift)
+
+# циклический сдвиг вправо: 7-18
 def _sigma0(num: int):
-    """As defined in the specification."""
     num = (_rotate_right(num, 7) ^
            _rotate_right(num, 18) ^
            (num >> 3))
     return num
 
+# циклический сдвиг вправо: 17-19
 def _sigma1(num: int):
-    """As defined in the specification."""
     num = (_rotate_right(num, 17) ^
            _rotate_right(num, 19) ^
            (num >> 10))
     return num
 
+# циклический сдвиг вправо: 2-13-22
 def _capsigma0(num: int):
-    """As defined in the specification."""
     num = (_rotate_right(num, 2) ^
            _rotate_right(num, 13) ^
            _rotate_right(num, 22))
     return num
 
+# циклический сдвиг вправо: 6-11-25
 def _capsigma1(num: int):
-    """As defined in the specification."""
     num = (_rotate_right(num, 6) ^
            _rotate_right(num, 11) ^
            _rotate_right(num, 25))
     return num
 
+# функция choice
 def _ch(x: int, y: int, z: int):
-    """As defined in the specification."""
     return (x & y) ^ (~x & z)
 
+# функция majority
 def _maj(x: int, y: int, z: int):
-    """As defined in the specification."""
     return (x & y) ^ (x & z) ^ (y & z)
 
-def _rotate_right(num: int, shift: int, size: int = 32):
-    """Rotate an integer right."""
-    return (num >> shift) | (num << size - shift)
-
+# вызов функций
 if __name__ == "__main__":
     user_input = input("Введите текст: ")
     print(f"SHA-256 хэш для введенного текста: {generate_hash(user_input).hex()}")
